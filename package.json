@@ -1,4 +1,8 @@
 {
+    "scripts" : {
+        "test" : "mocha ./mocha/tests.js",
+        "test-kitten" : "mocha -R nyan ./mocha/tests.js"
+    },
 	"dependencies": {
 		"mongodb": "2.2.5",
         "mocha" : "3.0.2"
