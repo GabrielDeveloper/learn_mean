@@ -1,10 +1,14 @@
 {
     "scripts" : {
-        "test" : "mocha ./mocha/tests.js",
-        "test-kitten" : "mocha -R nyan ./mocha/tests.js"
+        "test" : "mocha tests.js",
+        "watch" : "gulp watch"
     },
 	"dependencies": {
 		"mongodb": "2.2.5",
         "mocha" : "3.0.2"
-	}
+	},
+    "devDependencies" : {
+        "gulp" : "3.9.1",
+        "gulp-mocha" : "3.0.1"
+    }
 }
