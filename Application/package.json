@@ -1,5 +1,15 @@
 {
+    "scripts": {
+        "test": "gulp test",
+        "watch": "gulp watch"
+    },
     "dependencies" : {
         "mongoose" : "4.5.9"
+    },
+    "devDependencies": {
+        "gulp": "3.8.11",
+        "gulp-mocha": "2.0.1",
+        "mocha": "2.2.4"
     }
+
 }
