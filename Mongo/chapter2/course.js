@@ -16,6 +16,10 @@ var schema = new mongoose.Schema({
         type: String,
         required: true,
         maxlength: 140
+    },
+    description: {
+        type: String,
+        required: true
     }
 });
 
