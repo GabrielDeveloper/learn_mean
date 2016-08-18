@@ -17,7 +17,8 @@ schema.virtual('firstName').get(function() {
  * to be everything after the last space in the student's name.
  * For instance, "William Bruce Bailey" -> "Bailey" */
 schema.virtual('lastName').get(function() {
-  return 'Not Implemented!';
+    var last = this.name.split(' ');
+    return last[last.length - 1];
 });
 
 module.exports = schema;
