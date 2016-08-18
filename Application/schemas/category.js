@@ -10,8 +10,8 @@ var categorySchema = {
         type: String,
         ref: 'Category'
     }]
-;
+};
 
 module.exports = new mongoose.Schema(categorySchema);
-module.exports.categorySchema = categorySchema;}
+module.exports.categorySchema = categorySchema;
 
