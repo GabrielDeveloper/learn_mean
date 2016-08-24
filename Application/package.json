@@ -1,14 +1,15 @@
 {
     "scripts": {
-        "test": "gulp test",
-        "watch": "gulp watch"
+        "test": "mocha tests"
     },
     "dependencies" : {
-        "mongoose" : "4.5.9"
+        "express" : "4.12.3",
+        "http-status" : "0.1.8",
+        "mongoose" : "4.0.3",
+        "wagner-core" : "0.1.0"
     },
     "devDependencies": {
-        "gulp": "3.8.11",
-        "gulp-mocha": "2.0.1",
+        "superagent": "1.2.0",
         "mocha": "2.2.4"
     }
 
