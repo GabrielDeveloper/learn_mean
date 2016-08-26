@@ -1,27 +1,41 @@
-var URL_ROOT = 'http://localhost:3001';
 var assert = require('assert');
 var express = require('express');
 var wagner = require('wagner-core');
 var superagent = require('superagent');
 var _ = require('underscore');
+var status = require('http-status');
 
-describe('Category API', function(){
+var URL_ROOT = 'http://localhost:3001';
+var PRODUCT_ID = '000000000000000000000001';
+
+describe('Tests API', function(){
     var server;
     var Category;
     var Product;
+    var User;
 
     before(function(){
         var app = express();
 
         //Bootstrap server
         models = require('../models')(wagner);
-        app.use(require('../api')(wagner));
-
-        server = app.listen(3001);
 
         // Make Category model available in tests
         Category = models.Category;
         Product = models.Product;
+        User = models.User;
+
+        app.use(function(req, res, next) {
+            User.findOne({}, function(error, user) {
+                assert.ifError(error);
+                req.user = user;
+                next();
+            });
+        });
+
+
+        app.use(require('../api')(wagner));
+        server = app.listen(3001);
     });
 
     after(function(){
@@ -31,7 +45,8 @@ describe('Category API', function(){
     beforeEach(function(done) {
         var models = {
             Category: Category,
-            Product: Product
+            Product: Product,
+            User: User
         };
 
         _.each(models, function(value, key){
@@ -42,37 +57,7 @@ describe('Category API', function(){
         done();
     });
 
-    it('can load a product by id', function (done) {
-        var PRODUCT_ID = '000000000000000000000001';
-        var product = {
-            name: 'LG G4',
-            _id: PRODUCT_ID,
-            price: {
-                amount: 300,
-                currency: 'USD'
-            },
-        };
-
-        Product.create(product, function(error, doc) {
-            assert.ifError(error);
-            var url = URL_ROOT + '/product/id/' + PRODUCT_ID;
-            superagent.get(url, function(error, res) {
-                assert.ifError(error);
-                var result;
-
-                assert.doesNotThrow(function() {
-                    result = JSON.parse(res.text);
-                });
-
-                assert.ok(result);
-                assert.equal(result.product._id, PRODUCT_ID);
-                assert.equal(result.product.name, 'LG G4');
-                done();
-            });
-        });
-    });
-
-    it('can load all products in a category with sub-categories', function(done) {
+    beforeEach(function(done) {
         var categories = [
             { _id: 'Eletronics'},
             { _id: 'Phones', parent: 'Eletronics'},
@@ -82,6 +67,7 @@ describe('Category API', function(){
 
         var products = [
             {
+                _id: PRODUCT_ID,
                 name: 'LG G4',
                 category: { _id: 'Phones', ancestors: ['Eletronics', 'Phones']},
                 price: {
@@ -107,39 +93,73 @@ describe('Category API', function(){
             }
         ];
 
-        // Create 4 categories
-        Category.create(categories, function(error, categories) {
+        var users = [{
+            profile: {
+                username: 'gabriel',
+                picture: 'http://www.gabrieldeveloper.com.br/templates/gabriel/css/img/gabriel-developer.png'
+            },
+            data: {
+                oauth: 'invalid',
+                cart: []
+            }
+        }];
+
+        Category.create(categories, function(error) {
             assert.ifError(error);
-
-            // And 3 products
-            Product.create(products, function(error, products) {
+            Product.create(products, function(error) {
                 assert.ifError(error);
-                var url = URL_ROOT + '/product/category/Eletronics';
-                superagent.get(url, function(error, res) {
+                User.create(users, function(error) {
                     assert.ifError(error);
-                    var result;
-                    assert.doesNotThrow(function() {
-                        result = JSON.parse(res.text);
-                    });
-                    assert.equal(result.products.length, 2);
+                    done();
+                });
+            });
+        });
+    });
 
-                    // Should be in ascending order by name
-                    assert.equal(result.products[0].name, 'Asus Zenbook Prime');
-                    assert.equal(result.products[1].name, 'LG G4');
-
-                    // Sort by price, ascending
-                    var url = URL_ROOT + '/product/category/Eletronics?price=1';
-                    superagent(url, function(error, res) {
+    describe('User API', function(){
+       it('can save users cart', function (done) {
+            var url = URL_ROOT + '/me/cart';
+            superagent.
+                put(url).
+                send({
+                    data: {
+                        cart: [{ product: PRODUCT_ID, quantity: 1}]
+                    }
+                }).
+                end(function (error, res) {
+                    assert.ifError(error);
+                    assert.equal(res.status, status.OK);
+                    User.findOne({}, function (error, user){
                         assert.ifError(error);
-                        var result;
-                        assert.doesNotThrow(function() {
-                            result = JSON.parse(res.text);
-                        });
-                        assert.equal(result.products.length, 2);
+                        assert.equal(user.data.cart.length, 1);
+                        assert.equal(user.data.cart[0].product, PRODUCT_ID);
+                        assert.equal(user.data.cart[0].quantity, 1);
+                        done();
+                    });
+                });
+       });
 
-                        //Should be in acending order by precco
-                        assert.equal(result.products[0].name, 'LG G4');
-                        assert.equal(result.products[1].name, 'Asus Zenbook Prime');
+        it('can load users cart', function (done) {
+            var url = URL_ROOT + '/me';
+
+            User.findOne({}, function (error, user) {
+                assert.ifError(error);
+                user.data.cart = [{ product: PRODUCT_ID, quantity: 1}];
+                user.save(function(error) {
+                    assert.ifError(error);
+
+                    superagent.get(url, function (error, res) {
+                        assert.ifError(error);
+
+                        assert.equal(res.status, status.OK);
+                        var result;
+                        assert.doesNotThrow(function(){
+                            result = JSON.parse(res.text).user;
+                        });
+
+                        assert.equal(result.data.cart.length, 1);
+                        assert.equal(result.data.cart[0].product.name, 'LG G4');
+                        assert.equal(result.data.cart[0].quantity, 1);
                         done();
                     });
                 });
@@ -147,10 +167,59 @@ describe('Category API', function(){
         });
     });
 
-    it('can load a category by id', function (done) {
-        //Create a single category
-        Category.create({ _id: 'Eletronics' }, function(error, doc) {
-            assert.ifError(error);
+    describe('Product API', function(){
+        it('can load a product by id', function (done) {
+            var url = URL_ROOT + '/product/id/' + PRODUCT_ID;
+            superagent.get(url, function(error, res) {
+                assert.ifError(error);
+                var result;
+
+                assert.doesNotThrow(function() {
+                    result = JSON.parse(res.text);
+                });
+
+                assert.ok(result);
+                assert.equal(result.product._id, PRODUCT_ID);
+                assert.equal(result.product.name, 'LG G4');
+                done();
+            });
+        });
+
+        it('can load all products in a category with sub-categories', function(done) {
+            var url = URL_ROOT + '/product/category/Eletronics';
+            superagent.get(url, function(error, res) {
+                assert.ifError(error);
+                var result;
+                assert.doesNotThrow(function() {
+                    result = JSON.parse(res.text);
+                });
+                assert.equal(result.products.length, 2);
+                // Should be in ascending order by name
+                assert.equal(result.products[0].name, 'Asus Zenbook Prime');
+                assert.equal(result.products[1].name, 'LG G4');
+
+                // Sort by price, ascending
+                var url = URL_ROOT + '/product/category/Eletronics?price=1';
+                superagent(url, function(error, res) {
+                    assert.ifError(error);
+                    var result;
+                    assert.doesNotThrow(function() {
+                        result = JSON.parse(res.text);
+                    });
+                    assert.equal(result.products.length, 2);
+
+                    //Should be in acending order by precco
+                    assert.equal(result.products[0].name, 'LG G4');
+                    assert.equal(result.products[1].name, 'Asus Zenbook Prime');
+                    done();
+                });
+            });
+        });
+    });
+
+
+    describe('Category API', function(){
+        it('can load a category by id', function (done) {
             var url = URL_ROOT + '/category/id/Eletronics';
 
             //Make an HTTP request to localhost:3001/category/id/letronics
@@ -167,18 +236,8 @@ describe('Category API', function(){
                 done();
             });
         });
-    });
 
-    it('can load all categories that have a certain parent', function(done) {
-        var categories = [
-            { _id: 'Eletronics'},
-            { _id: 'Phones', parent: 'Eletronics'},
-            { _id: 'Laptops', parent: 'Eletronics'},
-            { _id: 'Bacon'}
-        ];
-
-        //Create 4 categories
-        Category.create(categories, function(error, categories) {
+        it('can load all categories that have a certain parent', function(done) {
             var url = URL_ROOT + '/category/parent/Eletronics';
 
             // Make an HTTP request to localhost:3001/category/parent/Eletronics
