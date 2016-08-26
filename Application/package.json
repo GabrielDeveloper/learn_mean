@@ -5,10 +5,13 @@
     "dependencies" : {
         "body-parser" : "1.12.4",
         "express" : "4.12.3",
+        "express-session" : "1.11.2",
         "http-status" : "0.1.8",
         "mongoose" : "4.0.3",
         "wagner-core" : "0.1.0",
-        "underscore" : "1.8.3"
+        "underscore" : "1.8.3",
+        "passport" : "0.2.2",
+        "passport-facebook" : "2.0.0"
     },
     "devDependencies": {
         "superagent": "1.2.0",
