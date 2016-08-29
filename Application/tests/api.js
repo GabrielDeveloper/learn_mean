@@ -19,10 +19,12 @@ describe('Tests API', function(){
 
         //Bootstrap server
         models = require('../models')(wagner);
+        dependencies = require('../dependencies')(wagner);
 
         // Make Category model available in tests
         Category = models.Category;
         Product = models.Product;
+        Stripe = dependencies.Stripe;
         User = models.User;
 
         app.use(function(req, res, next) {
@@ -43,18 +45,16 @@ describe('Tests API', function(){
     });
 
     beforeEach(function(done) {
-        var models = {
-            Category: Category,
-            Product: Product,
-            User: User
-        };
-
-        _.each(models, function(value, key){
-            value.remove({}, function(error) {
+        Category.remove({}, function(error) {
+            assert.ifError(error);
+            Product.remove({}, function(error) {
                 assert.ifError(error);
+                User.remove({}, function (error) {
+                    assert.ifError(error);
+                    done();
+                });
             });
         });
-        done();
     });
 
     beforeEach(function(done) {
@@ -111,6 +111,49 @@ describe('Tests API', function(){
                 User.create(users, function(error) {
                     assert.ifError(error);
                     done();
+                });
+            });
+        });
+    });
+
+    describe('Cart API', function(){
+        it('can check out', function(done) {
+            var url = URL_ROOT + '/checkout';
+
+            User.findOne({}, function(error, user) {
+                assert.ifError(error);
+                user.data.cart = [{ product: PRODUCT_ID, quantity: 1}];
+                user.save(function(error) {
+                    assert.ifError(error);
+
+                    superagent.
+                        post(url).
+                        send({
+                            stripeToken: {
+                                number: '4242424242424242',
+                                exp_month: 12,
+                                exp_year: 2017,
+                                cvc: '123'
+                            }
+                        }).
+                        end(function(error, res) {
+                            assert.ifError(error);
+
+                            assert.equal(res.status, 200);
+                            var result;
+                            assert.doesNotThrow(function (){
+                                result = JSON.parse(res.text);
+                            });
+
+                            assert.ok(result.id);
+                            Stripe.charges.retrieve(result.id, function(error, charge) {
+                                assert.ifError(error);
+                                assert.ok(charge);
+                                assert.equal(charge.amount, 2000 * 100);
+                                done();
+                            });
+                        });
+                        done();
                 });
             });
         });

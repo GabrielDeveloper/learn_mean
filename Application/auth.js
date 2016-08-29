@@ -19,15 +19,20 @@ function setupAuth(User, app) {
             callbackURL: 'http://localhost:3001/auth/facebook/callback'
         },
         function(accessToken, refreshToken, profile, done) {
-            if (!profile.emails || !profile.emails.length) {
-                return done('No emails associated with this account!');
-            }
+/*
+ * API NAO ESTA RETORNANDO O profile.email
+ */
+
+//            if (!profile.emails || !profile.emails.length) {
+//                return done('No emails associated with this account!');
+//            }
 
             User.findOneAndUpdate(
                 { 'data.auth' : profile.id},
                 {
                     $set: {
-                        'profile.username' : profile.emails[0].value,
+//                        'profile.username' : profile.emails[0].value,
+                        'profile.username' : profile.displayName,
                         'profile.picture' : 'http://graph.facebook.com/' + 
                             profile.id.toString() + '/picture?type=large'
                     }
