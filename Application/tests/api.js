@@ -211,6 +211,26 @@ describe('Tests API', function(){
     });
 
     describe('Product API', function(){
+
+        it('can search by text', function (done) {
+            var url = URL_ROOT + '/product/text/g4';
+
+            superagent.get(url, function (error, res) {
+                assert.ifError(error);
+                assert.equal(res.status, status.OK);
+
+                var results;
+                assert.doesNotThrow(function (){
+                    results = JSON.parse(res.text).products;
+                });
+
+                assert.equal(results.length, 1);
+                assert.equal(results[0]._id, PRODUCT_ID);
+                assert.equal(results[0].name, 'LG G4');
+                done();
+            });
+        });
+
         it('can load a product by id', function (done) {
             var url = URL_ROOT + '/product/id/' + PRODUCT_ID;
             superagent.get(url, function(error, res) {
