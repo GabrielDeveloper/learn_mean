@@ -22,10 +22,19 @@ describe('Tests API', function(){
         dependencies = require('../dependencies')(wagner);
 
         // Make Category model available in tests
-        Category = models.Category;
-        Product = models.Product;
-        Stripe = dependencies.Stripe;
-        User = models.User;
+        var deps = wagner.invoke(function(Category, Product, Stripe, User) {
+            return {
+                Category: Category,
+                Product: Product,
+                Stripe: Stripe,
+                User: User,
+            };
+        });
+
+        Category = deps.Category;
+        Product = deps.Product;
+        Stripe = deps.Stripe;
+        User = deps.User;
 
         app.use(function(req, res, next) {
             User.findOne({}, function(error, user) {
