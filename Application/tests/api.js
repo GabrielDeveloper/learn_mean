@@ -158,7 +158,7 @@ describe('Tests API', function(){
                             Stripe.charges.retrieve(result.id, function(error, charge) {
                                 assert.ifError(error);
                                 assert.ok(charge);
-                                assert.equal(charge.amount, 2000 * 100);
+                                assert.equal(charge.amount, 300 * 100);
                                 done();
                             });
                         });
