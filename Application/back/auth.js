@@ -16,23 +16,20 @@ function setupAuth(User, app, Config) {
         {
             clientID: Config.facebookClientId,
             clientSecret: Config.facebookClientSecret,
-            callbackURL: 'http://localhost:3001/auth/facebook/callback'
+            callbackURL: 'http://localhost:3001/auth/facebook/callback',
+            profileFields: ['id', 'emails', 'name']
         },
         function(accessToken, refreshToken, profile, done) {
-/*
- * API NAO ESTA RETORNANDO O profile.email
- */
 
-//            if (!profile.emails || !profile.emails.length) {
-//                return done('No emails associated with this account!');
-//            }
+            if (!profile.emails || !profile.emails.length) {
+                return done('No emails associated with this account!');
+            }
 
             User.findOneAndUpdate(
                 { 'data.auth' : profile.id},
                 {
                     $set: {
-//                        'profile.username' : profile.emails[0].value,
-                        'profile.username' : profile.displayName,
+                        'profile.username' : profile.emails[0].value,
                         'profile.picture' : 'http://graph.facebook.com/' + 
                             profile.id.toString() + '/picture?type=large'
                     }
