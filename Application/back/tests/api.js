@@ -1,3 +1,7 @@
+global.rootRequire = function(name) {
+    return require(require('path').dirname(__filename) + '/../' + name);
+}
+
 var assert = require('assert');
 var express = require('express');
 var wagner = require('wagner-core');
@@ -18,8 +22,8 @@ describe('Tests API', function(){
         var app = express();
 
         //Bootstrap server
-        models = require('../models')(wagner);
-        dependencies = require('../dependencies')(wagner);
+        models = rootRequire('models')(wagner);
+        dependencies = rootRequire('dependencies')(wagner);
 
         // Make Category model available in tests
         var deps = wagner.invoke(function(Category, Product, Stripe, User) {
@@ -45,7 +49,7 @@ describe('Tests API', function(){
         });
 
 
-        app.use(require('../api')(wagner));
+        app.use(rootRequire('api/v1/api')(wagner));
         server = app.listen(3001);
     });
 
