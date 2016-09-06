@@ -26,7 +26,7 @@ function setupAuth(User, app, Config) {
             }
 
             User.findOneAndUpdate(
-                { 'data.auth' : profile.id},
+                { 'data.oauth' : profile.id},
                 {
                     $set: {
                         'profile.username' : profile.emails[0].value,

@@ -1,4 +1,19 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+module.exports = function ($scope, $http, $user) {
+    $scope.addToCart = function (product) {
+        var data = {data : {cart: [{product: product._id, quantity: product.quantity}]}};
+        $scope.success = false;
+        $http.
+            put('/api/v1/me/cart', data).
+            success(function (data) {
+                $scope.user = data.user;
+                $user.loadUser();
+                $scope.success = true;
+            });
+    };
+};
+
+},{}],2:[function(require,module,exports){
 module.exports = function ($scope, $routeParams, $http) {
     var encoded = encodeURIComponent($routeParams.category);
 
@@ -30,7 +45,7 @@ module.exports = function ($scope, $routeParams, $http) {
     }, 0);
 };
 
-},{}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 module.exports = function ($scope, $routeParams, $http) {
   var encoded = encodeURIComponent($routeParams.category);
 
@@ -51,7 +66,49 @@ module.exports = function ($scope, $routeParams, $http) {
 };
 
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
+module.exports = function($scope, $http, $user) {
+    $scope.user = $user;
+    $scope.updateCart = function () {
+        $http.
+            put('/api/v1/me/cart', $user.user).
+            success(function(data) {
+                $scope.updated = true;
+            });
+    }
+
+    Stripe.setPublishableKey('pk_test_KVC0AphhVxm52zdsM4WoBstU');
+
+    $scope.stripeToken = {
+        number: '4242424242424242',
+        cvc: '123',
+        exp_month: '12',
+        exp_year: '2016'
+    };
+
+    $scope.checkout = function() {
+        Stripe.card.createToken($scope.stripeToken, function(status, response) {
+        if (status.error) {
+            $scope.error = status.error;
+            return;
+        }
+
+        $http.
+            post('/api/v1/checkout', { stripeToken: response.id }).
+            success(function(data) {
+                $scope.checkedOut = true;
+                $user.user.data.cart = [];
+            });
+        });
+    };
+
+
+    setTimeout(function() {
+        $scope.$emit('CheckoutController');
+    }, 0);
+};
+
+},{}],5:[function(require,module,exports){
 module.exports = function($scope, $routeParams, $http) {
   var encoded = encodeURIComponent($routeParams.id);
 
@@ -66,7 +123,7 @@ module.exports = function($scope, $routeParams, $http) {
   }, 0);
 };
 
-},{}],4:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 module.exports = function($scope, $user) {
   $scope.user = $user;
 
@@ -76,7 +133,7 @@ module.exports = function($scope, $user) {
 };
 
 
-},{}],5:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 var _ = require('underscore');
 
 module.exports = function (components) {
@@ -85,7 +142,9 @@ module.exports = function (components) {
         'UserMenuController' : require('./UserMenuController'),
         'ProductDetailsController' : require('./ProductDetailsController'),
         'CategoryTreeController' : require('./CategoryTreeController'),
-        'CategoryProductsController' : require('./CategoryProductsController')
+        'CategoryProductsController' : require('./CategoryProductsController'),
+        'CheckoutController' : require('./CheckoutController'),
+        'AddToCartController' : require('./AddToCartController')
     };
 
     _.each(controllers, function(controller, name) {
@@ -95,7 +154,15 @@ module.exports = function (components) {
     return components;
 }
 
-},{"./CategoryProductsController":1,"./CategoryTreeController":2,"./ProductDetailsController":3,"./UserMenuController":4,"underscore":12}],6:[function(require,module,exports){
+},{"./AddToCartController":1,"./CategoryProductsController":2,"./CategoryTreeController":3,"./CheckoutController":4,"./ProductDetailsController":5,"./UserMenuController":6,"underscore":16}],8:[function(require,module,exports){
+module.exports = function (){
+    return {
+        controller: 'AddToCartController',
+        templateUrl: 'templates/add_to_cart.html'
+    };
+};
+
+},{}],9:[function(require,module,exports){
 module.exports = function() {
     return {
         controller: 'CategoryProductsController',
@@ -103,7 +170,7 @@ module.exports = function() {
     };
 };
 
-},{}],7:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 module.exports = function () {
     return {
         controller: 'CategoryTreeController',
@@ -111,7 +178,15 @@ module.exports = function () {
     };
 };
 
-},{}],8:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
+module.exports = function () {
+    return {
+        controller: 'CheckoutController',
+        templateUrl: 'templates/checkout.html'
+    };
+};
+
+},{}],12:[function(require,module,exports){
 var _ = require('underscore');
 
 module.exports = function (components) {
@@ -120,7 +195,9 @@ module.exports = function (components) {
         "userMenu" : require('./userMenu'),
         "productDetails" : require('./productDetails'),
         "categoryTree" : require('./categoryTree'),
-        "categoryProducts" : require('./categoryProducts')
+        "categoryProducts" : require('./categoryProducts'),
+        "addToCart" : require('./addToCart'),
+        "checkout" : require('./checkout')
     };
 
     _.each(directives, function(directive, name) {
@@ -130,8 +207,7 @@ module.exports = function (components) {
     return components;
 };
 
-
-},{"./categoryProducts":6,"./categoryTree":7,"./productDetails":9,"./userMenu":10,"underscore":12}],9:[function(require,module,exports){
+},{"./addToCart":8,"./categoryProducts":9,"./categoryTree":10,"./checkout":11,"./productDetails":13,"./userMenu":14,"underscore":16}],13:[function(require,module,exports){
 module.exports = function () {
     return {
         controller: 'ProductDetailsController',
@@ -139,7 +215,7 @@ module.exports = function () {
     };
 };
 
-},{}],10:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 module.exports = function() {
   return {
     controller: 'UserMenuController',
@@ -148,7 +224,7 @@ module.exports = function() {
 };
 
 
-},{}],11:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 // Generated by CoffeeScript 1.7.1
 module.exports = {
   100: 'Continue',
@@ -237,7 +313,7 @@ module.exports = {
   HTTP_VERSION_NOT_SUPPORTED: 505
 };
 
-},{}],12:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 //     Underscore.js 1.5.2
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -1515,7 +1591,7 @@ module.exports = {
 
 }).call(this);
 
-},{}],13:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 var status = require('http-status');
 var _ = require('underscore');
 
@@ -1532,7 +1608,7 @@ module.exports = function(components) {
     return components;
 };
 
-},{"./user":14,"http-status":11,"underscore":12}],14:[function(require,module,exports){
+},{"./user":18,"http-status":15,"underscore":16}],18:[function(require,module,exports){
 var status = require('http-status');
 
 module.exports = function($http) {
@@ -1559,7 +1635,7 @@ module.exports = function($http) {
 };
 
 
-},{"http-status":11}],15:[function(require,module,exports){
+},{"http-status":15}],19:[function(require,module,exports){
 var _ = require('underscore');
 
 var components = angular.module('mean-retail.components', ['ng']);
@@ -1572,6 +1648,9 @@ var app = angular.module('mean-retail', ['mean-retail.components', 'ngRoute']);
 
 app.config(function($routeProvider) {
   $routeProvider.
+    when('/checkout', {
+        template: '<checkout></checkout>'
+    }).
     when('/category/:category', {
         templateUrl: 'templates/category_view.html'
     }).
@@ -1580,4 +1659,4 @@ app.config(function($routeProvider) {
     });
 });
 
-},{"./controllers/controllers":5,"./directives/directives":8,"./services/services":13,"underscore":12}]},{},[15]);
+},{"./controllers/controllers":7,"./directives/directives":12,"./services/services":17,"underscore":16}]},{},[19]);

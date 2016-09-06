@@ -6,7 +6,9 @@ module.exports = function (components) {
         'UserMenuController' : require('./UserMenuController'),
         'ProductDetailsController' : require('./ProductDetailsController'),
         'CategoryTreeController' : require('./CategoryTreeController'),
-        'CategoryProductsController' : require('./CategoryProductsController')
+        'CategoryProductsController' : require('./CategoryProductsController'),
+        'CheckoutController' : require('./CheckoutController'),
+        'AddToCartController' : require('./AddToCartController')
     };
 
     _.each(controllers, function(controller, name) {

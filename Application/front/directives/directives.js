@@ -6,7 +6,9 @@ module.exports = function (components) {
         "userMenu" : require('./userMenu'),
         "productDetails" : require('./productDetails'),
         "categoryTree" : require('./categoryTree'),
-        "categoryProducts" : require('./categoryProducts')
+        "categoryProducts" : require('./categoryProducts'),
+        "addToCart" : require('./addToCart'),
+        "checkout" : require('./checkout')
     };
 
     _.each(directives, function(directive, name) {
