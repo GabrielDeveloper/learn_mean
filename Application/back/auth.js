@@ -51,13 +51,23 @@ function setupAuth(User, app, Config) {
     app.use(passport.session());
 
     //Express routes for auth
-    app.get('/auth/facebook',
-        passport.authenticate('facebook', {scope: ['email'] }));
+    app.get('/auth/facebook', function (req, res, next) {
+        var redirect = encodeURIComponent(req.query.redirect || '/');
 
-    app.get('/auth/facebook/callback',
-        passport.authenticate('facebook', { faliureRedirect: '/fail' }),
+        passport.authenticate('facebook', {
+            scope: ['email'] ,
+            callbackURL: 'http://localhost:3001/auth/facebook/callback?redirect=' + redirect
+        })(req, res, next);
+    });
+
+    app.get('/auth/facebook/callback', 
+        function(req, res, next) {
+            var url = 'http://localhost:3001/auth/facebook/callback?redirect=' +
+                encodeURIComponent(req.query.redirect);
+            passport.authenticate('facebook', { callbackURL: url })(req, res, next);
+        },
         function (req, res){
-            res.send('Welcome, ' + req.user.profile.username);
+            res.redirect(req.query.redirect);
         }
     );
 }
