@@ -1,5 +1,4 @@
 laradock/
 node_modules/
 dockermean/
-*chapter*
 npm-debug.log
