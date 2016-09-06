@@ -1,21 +1,17 @@
-exports.UserMenuController = function($scope, $user) {
-  $scope.user = $user;
+var _ = require('underscore');
 
-  setTimeout(function() {
-    $scope.$emit('UserMenuController');
-  }, 0);
-};
+module.exports = function (components) {
 
-exports.ProductDetailsController = function($scope, $routeParams, $http) {
-  var encoded = encodeURIComponent($routeParams.id);
+    var controllers = {
+        'UserMenuController' : require('./UserMenuController'),
+        'ProductDetailsController' : require('./ProductDetailsController'),
+        'CategoryTreeController' : require('./CategoryTreeController'),
+        'CategoryProductsController' : require('./CategoryProductsController')
+    };
 
-  $http.
-    get('/api/v1/product/id/' + encoded).
-    success(function(data) {
-      $scope.product = data.product;
+    _.each(controllers, function(controller, name) {
+        components.controller(name, controller);
     });
 
-  setTimeout(function() {
-    $scope.$emit('ProductDetailsController');
-  }, 0);
-};
+    return components;
+}

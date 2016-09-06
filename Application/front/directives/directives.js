@@ -1,13 +1,17 @@
-exports.userMenu = function() {
-  return {
-    controller: 'UserMenuController',
-    templateUrl: '/templates/user_menu.html'
-  };
-};
+var _ = require('underscore');
 
-exports.productDetails = function () {
-    return {
-        controller: 'ProductDetailsController',
-        templateUrl: 'templates/product_details.html'
+module.exports = function (components) {
+
+    var directives = {
+        "userMenu" : require('./userMenu'),
+        "productDetails" : require('./productDetails'),
+        "categoryTree" : require('./categoryTree'),
+        "categoryProducts" : require('./categoryProducts')
     };
+
+    _.each(directives, function(directive, name) {
+        components.directive(name, directive);
+    });
+
+    return components;
 };

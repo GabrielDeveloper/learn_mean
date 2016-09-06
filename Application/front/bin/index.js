@@ -1,13 +1,58 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-exports.UserMenuController = function($scope, $user) {
-  $scope.user = $user;
+module.exports = function ($scope, $routeParams, $http) {
+    var encoded = encodeURIComponent($routeParams.category);
+
+    $scope.price = undefined;
+
+    $scope.handlePriceClick = function () {
+        if ($scope.price === undefined) {
+            $scope.price = -1;
+            return $scope.load();
+        }
+        $scope.price = 0 - $scope.price;
+        return  $scope.load();
+    };
+
+    $scope.load = function () {
+        var queryParams = { price : $scope.price};
+        $http.
+            get('/api/v1/product/category/' + encoded,  {params: queryParams}).
+            success(function (data) {
+                $scope.products = data.products;
+            });
+
+    };
+
+    $scope.load();
+
+    setTimeout(function() {
+        $scope.$emit('CategoryProductsController');
+    }, 0);
+};
+
+},{}],2:[function(require,module,exports){
+module.exports = function ($scope, $routeParams, $http) {
+  var encoded = encodeURIComponent($routeParams.category);
+
+  $http.
+    get('/api/v1/category/id/' + encoded).
+    success(function(data) {
+        $scope.category = data.category;
+        $http.
+            get('/api/v1/category/parent/' + encoded).
+            success(function (data) {
+                $scope.children = data.categories;
+            });
+    });
 
   setTimeout(function() {
-    $scope.$emit('UserMenuController');
+    $scope.$emit('CategoryTreeController');
   }, 0);
 };
 
-exports.ProductDetailsController = function($scope, $routeParams, $http) {
+
+},{}],3:[function(require,module,exports){
+module.exports = function($scope, $routeParams, $http) {
   var encoded = encodeURIComponent($routeParams.id);
 
   $http.
@@ -21,22 +66,89 @@ exports.ProductDetailsController = function($scope, $routeParams, $http) {
   }, 0);
 };
 
-},{}],2:[function(require,module,exports){
-exports.userMenu = function() {
-  return {
-    controller: 'UserMenuController',
-    templateUrl: '/templates/user_menu.html'
-  };
+},{}],4:[function(require,module,exports){
+module.exports = function($scope, $user) {
+  $scope.user = $user;
+
+  setTimeout(function() {
+    $scope.$emit('UserMenuController');
+  }, 0);
 };
 
-exports.productDetails = function () {
+
+},{}],5:[function(require,module,exports){
+var _ = require('underscore');
+
+module.exports = function (components) {
+
+    var controllers = {
+        'UserMenuController' : require('./UserMenuController'),
+        'ProductDetailsController' : require('./ProductDetailsController'),
+        'CategoryTreeController' : require('./CategoryTreeController'),
+        'CategoryProductsController' : require('./CategoryProductsController')
+    };
+
+    _.each(controllers, function(controller, name) {
+        components.controller(name, controller);
+    });
+
+    return components;
+}
+
+},{"./CategoryProductsController":1,"./CategoryTreeController":2,"./ProductDetailsController":3,"./UserMenuController":4,"underscore":12}],6:[function(require,module,exports){
+module.exports = function() {
+    return {
+        controller: 'CategoryProductsController',
+        templateUrl: 'templates/category_products.html'
+    };
+};
+
+},{}],7:[function(require,module,exports){
+module.exports = function () {
+    return {
+        controller: 'CategoryTreeController',
+        templateUrl : 'templates/category_tree.html'
+    };
+};
+
+},{}],8:[function(require,module,exports){
+var _ = require('underscore');
+
+module.exports = function (components) {
+
+    var directives = {
+        "userMenu" : require('./userMenu'),
+        "productDetails" : require('./productDetails'),
+        "categoryTree" : require('./categoryTree'),
+        "categoryProducts" : require('./categoryProducts')
+    };
+
+    _.each(directives, function(directive, name) {
+        components.directive(name, directive);
+    });
+
+    return components;
+};
+
+
+},{"./categoryProducts":6,"./categoryTree":7,"./productDetails":9,"./userMenu":10,"underscore":12}],9:[function(require,module,exports){
+module.exports = function () {
     return {
         controller: 'ProductDetailsController',
         templateUrl: 'templates/product_details.html'
     };
 };
 
-},{}],3:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
+module.exports = function() {
+  return {
+    controller: 'UserMenuController',
+    templateUrl: '/templates/user_menu.html'
+  };
+};
+
+
+},{}],11:[function(require,module,exports){
 // Generated by CoffeeScript 1.7.1
 module.exports = {
   100: 'Continue',
@@ -125,7 +237,7 @@ module.exports = {
   HTTP_VERSION_NOT_SUPPORTED: 505
 };
 
-},{}],4:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 //     Underscore.js 1.5.2
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -1403,10 +1515,27 @@ module.exports = {
 
 }).call(this);
 
-},{}],5:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
+var status = require('http-status');
+var _ = require('underscore');
+
+module.exports = function(components) {
+
+    var services = {
+        "$user" : require('./user')
+    };
+
+    _.each(services, function(factory, name) {
+        components.factory(name, factory);
+    });
+
+    return components;
+};
+
+},{"./user":14,"http-status":11,"underscore":12}],14:[function(require,module,exports){
 var status = require('http-status');
 
-exports.$user = function($http) {
+module.exports = function($http) {
   var s = {};
 
   s.loadUser = function() {
@@ -1429,36 +1558,26 @@ exports.$user = function($http) {
   return s;
 };
 
-},{"http-status":3}],6:[function(require,module,exports){
 
-var controllers = require('./controllers/controllers');
-var directives = require('./directives/directives');
-var services = require('./services/services');
-
+},{"http-status":11}],15:[function(require,module,exports){
 var _ = require('underscore');
 
 var components = angular.module('mean-retail.components', ['ng']);
 
-
-_.each(controllers, function(controller, name) {
-    components.controller(name, controller);
-});
-
-_.each(directives, function(directive, name) {
-  components.directive(name, directive);
-});
-
-_.each(services, function(factory, name) {
-  components.factory(name, factory);
-});
+require('./controllers/controllers')(components);
+require('./directives/directives')(components);
+require('./services/services')(components);
 
 var app = angular.module('mean-retail', ['mean-retail.components', 'ngRoute']);
 
 app.config(function($routeProvider) {
   $routeProvider.
+    when('/category/:category', {
+        templateUrl: 'templates/category_view.html'
+    }).
     when('/product/:id', {
       template: '<product-details></product-details>'
     });
 });
 
-},{"./controllers/controllers":1,"./directives/directives":2,"./services/services":5,"underscore":4}]},{},[6]);
+},{"./controllers/controllers":5,"./directives/directives":8,"./services/services":13,"underscore":12}]},{},[15]);
