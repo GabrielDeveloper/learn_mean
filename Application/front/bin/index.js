@@ -7,6 +7,19 @@ exports.UserMenuController = function($scope, $user) {
   }, 0);
 };
 
+exports.ProductDetailsController = function($scope, $routeParams, $http) {
+  var encoded = encodeURIComponent($routeParams.id);
+
+  $http.
+    get('/api/v1/product/id/' + encoded).
+    success(function(data) {
+      $scope.product = data.product;
+    });
+
+  setTimeout(function() {
+    $scope.$emit('ProductDetailsController');
+  }, 0);
+};
 
 },{}],2:[function(require,module,exports){
 exports.userMenu = function() {
@@ -14,6 +27,13 @@ exports.userMenu = function() {
     controller: 'UserMenuController',
     templateUrl: '/templates/user_menu.html'
   };
+};
+
+exports.productDetails = function () {
+    return {
+        controller: 'ProductDetailsController',
+        templateUrl: 'templates/product_details.html'
+    };
 };
 
 },{}],3:[function(require,module,exports){
@@ -1411,25 +1431,34 @@ exports.$user = function($http) {
 
 },{"http-status":3}],6:[function(require,module,exports){
 
-var controllers = require('./controllers/UserMenuController');
-var directives = require('./directives/userMenu');
-var services = require('./services/User');
+var controllers = require('./controllers/controllers');
+var directives = require('./directives/directives');
+var services = require('./services/services');
 
 var _ = require('underscore');
 
-var app = angular.module('mean-retail', ['ng']);
+var components = angular.module('mean-retail.components', ['ng']);
 
 
 _.each(controllers, function(controller, name) {
-    app.controller(name, controller);
+    components.controller(name, controller);
 });
 
 _.each(directives, function(directive, name) {
-  app.directive(name, directive);
+  components.directive(name, directive);
 });
 
 _.each(services, function(factory, name) {
-  app.factory(name, factory);
+  components.factory(name, factory);
 });
 
-},{"./controllers/UserMenuController":1,"./directives/userMenu":2,"./services/User":5,"underscore":4}]},{},[6]);
+var app = angular.module('mean-retail', ['mean-retail.components', 'ngRoute']);
+
+app.config(function($routeProvider) {
+  $routeProvider.
+    when('/product/:id', {
+      template: '<product-details></product-details>'
+    });
+});
+
+},{"./controllers/controllers":1,"./directives/directives":2,"./services/services":5,"underscore":4}]},{},[6]);
