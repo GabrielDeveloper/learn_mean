@@ -8,11 +8,19 @@
     "karma-chrome-launcher": "0.1.4",
     "karma-mocha": "0.1.4",
     "http-status": "0.1.8",
-    "underscore": "1.5.2"
+    "underscore": "1.5.2",
+    "stripe" : "3.3.4",
+    "morgan" : "1.7.0",
+    "chai" : "3.5.0"
   },
   "scripts": {
     "browserify": "browserify index.js -o ./bin/index.js",
     "watch": "gulp watch"
+  },
+  "devDependencies": {
+    "gulp": "3.8.11",
+    "gulp-mocha": "2.0.1",
+    "mocha": "2.2.4"
   }
 }
 

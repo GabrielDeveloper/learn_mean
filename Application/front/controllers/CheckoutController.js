@@ -1,3 +1,4 @@
+
 module.exports = function($scope, $http, $user) {
     $scope.user = $user;
     $scope.updateCart = function () {
@@ -8,7 +9,7 @@ module.exports = function($scope, $http, $user) {
             });
     }
 
-    Stripe.setPublishableKey('pk_test_KVC0AphhVxm52zdsM4WoBstU');
+    Stripe.setPublishableKey('pk_test_nRlJAvrEi0JuuRzox1AKrHxF');
 
     $scope.stripeToken = {
         number: '4242424242424242',
