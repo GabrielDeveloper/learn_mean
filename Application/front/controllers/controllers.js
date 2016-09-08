@@ -8,7 +8,8 @@ module.exports = function (components) {
         'CategoryTreeController' : require('./CategoryTreeController'),
         'CategoryProductsController' : require('./CategoryProductsController'),
         'CheckoutController' : require('./CheckoutController'),
-        'AddToCartController' : require('./AddToCartController')
+        'AddToCartController' : require('./AddToCartController'),
+        'SearchBarController' : require('./SearchBarController')
     };
 
     _.each(controllers, function(controller, name) {

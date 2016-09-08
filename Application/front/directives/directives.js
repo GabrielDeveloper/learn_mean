@@ -8,7 +8,8 @@ module.exports = function (components) {
         "categoryTree" : require('./categoryTree'),
         "categoryProducts" : require('./categoryProducts'),
         "addToCart" : require('./addToCart'),
-        "checkout" : require('./checkout')
+        "checkout" : require('./checkout'),
+        "searchBar" : require('./searchBar')
     };
 
     _.each(directives, function(directive, name) {

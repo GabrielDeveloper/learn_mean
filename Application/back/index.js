@@ -10,6 +10,10 @@ rootRequire('dependencies')(wagner);
 
 var app = express();
 
+var fs = require('fs');
+var accessLogStream = fs.createWriteStream(__dirname + '/logs/access.log',{flags: 'a'});
+app.use(require('morgan')('combined', {stream: accessLogStream}));
+
 wagner.invoke(rootRequire('auth'), {app : app});
 
 app.use('/api/v1', rootRequire('api/v1/api')(wagner));

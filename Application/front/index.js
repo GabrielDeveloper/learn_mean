@@ -10,6 +10,9 @@ var app = angular.module('mean-retail', ['mean-retail.components', 'ngRoute']);
 
 app.config(function($routeProvider) {
   $routeProvider.
+    when('/', {
+        template: '<search-bar></search-bar>'
+    }).
     when('/checkout', {
         template: '<checkout></checkout>'
     }).
