@@ -30,10 +30,10 @@ module.exports = function(db, fx) {
         category: Category.categorySchema,
         internal: {
             approximatePriceUSD: Number
-        }
+        },
     };
 
-    var schema = new mongoose.Schema(productSchema);
+    var schema = new mongoose.Schema(productSchema, { timestamps : true});
 
     schema.index({ name : 'text' });
 

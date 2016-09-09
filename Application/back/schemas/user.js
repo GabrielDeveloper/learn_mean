@@ -28,5 +28,5 @@ var userSchema = {
     }
 };
 
-module.exports = new mongoose.Schema(userSchema);
+module.exports = new mongoose.Schema(userSchema, { timestamps : true});
 module.exports.userSchema = userSchema;
